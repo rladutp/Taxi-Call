@@ -540,7 +540,7 @@ a-driver   6/7     7            6           9h
 a-driver   7/7     7            7           9h
 ```
 
-- kubectl get으로 HPA을 확인하면 CPU 사용률이 64%로 증가됐다.
+- kubectl get으로 HPA을 확인하면 CPU 사용률이 136%로 증가됐다.
 ```
 $kubectl get hpa a-driver 
 NAME       REFERENCE             TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
