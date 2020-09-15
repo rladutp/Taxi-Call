@@ -451,45 +451,59 @@ $kubectl get deployment metrics-server -n kube-system
 kubectl label namespace istio-cb-ns istio-injection=disabled --overwrite
 ```
 
-- replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 10프로를 넘어서면 replica 를 10개까지 늘려준다:
+- replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 20프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deploy a-driver -n skcc-ns --min=1 --max=10 --cpu-percent=10
+kubectl autoscale deploy a-driver -n skcc-ns --min=1 --max=10 --cpu-percent=20
 
 # 적용 내용
 $kubectl get all -n istio-cb-ns
-NAME                        TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)          AGE
-service/gateway             LoadBalancer   10.100.95.162    a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com   8080:30387/TCP   19h
-service/hospitalmanage      ClusterIP      10.100.5.64      <none>                                                                   8080/TCP         19h
-service/mypage              ClusterIP      10.100.240.169   <none>                                                                   8080/TCP         19h
-service/reservationmanage   ClusterIP      10.100.232.233   <none>                                                                   8080/TCP         19h
-service/screeningmanage     ClusterIP      10.100.101.120   <none>                                                                   8080/TCP         19h
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/a-driver-7d64667f79-ghspc       1/1     Running   1          5m14s
+pod/a-driver-7d64667f79-lsvc6       0/1     Running   0          7s
+pod/a-driver-7d64667f79-nk7gg       0/1     Running   0          7s
+pod/a-driver-7d64667f79-tcssl       0/1     Running   0          7s
+pod/a-gateway-64c49fb9c-fvxs5       2/2     Running   0          5h15m
+pod/a-management-5565fcf6b7-vmjlf   2/2     Running   1          101m
+pod/a-order-86f4f96986-x2q8b        2/2     Running   2          6h14m
+pod/a-orderstatus-8c867d5df-5sfww   2/2     Running   3          6h18m
+pod/httpie                          2/2     Running   0          9h
+pod/siege-7df8f548c-pvv6w           2/2     Running   0          9h
 
-NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/gateway             1/1     1            1           19h
-deployment.apps/hospitalmanage      1/1     1            1           11h
-deployment.apps/mypage              1/1     1            1           19h
-deployment.apps/reservationmanage   1/1     1            1           19h
-deployment.apps/screeningmanage     1/1     1            1           19h
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)          AGE
+service/a-driver        ClusterIP      10.100.195.28    <none>                                                                         8080/TCP         9h
+service/a-gateway       LoadBalancer   10.100.30.17     ab63205308df54474afe2cebc4e45bb5-1085189319.ap-northeast-2.elb.amazonaws.com   8080:31850/TCP   9h
+service/a-management    ClusterIP      10.100.205.161   <none>                                                                         8080/TCP         26h
+service/a-order         ClusterIP      10.100.59.26     <none>                                                                         8080/TCP         25h
+service/a-orderstatus   ClusterIP      10.100.33.227    <none>                                                                         8080/TCP         9h
 
-NAME                                           DESIRED   CURRENT   READY   AGE
-replicaset.apps/gateway-5d58bbcb67             1         1         1       19h
-replicaset.apps/gateway-db44fcf75              0         0         0       19h
-replicaset.apps/hospitalmanage-8658bbbb6f      1         1         1       11h
-replicaset.apps/mypage-567c4b57ff              1         1         1       18h
-replicaset.apps/mypage-f5486756b               0         0         0       19h
-replicaset.apps/reservationmanage-6f47749879   0         0         0       18h
-replicaset.apps/reservationmanage-c96669994    1         1         1       18h
-replicaset.apps/reservationmanage-f74d47f65    0         0         0       19h
-replicaset.apps/screeningmanage-56ff67c8cf     0         0         0       18h
-replicaset.apps/screeningmanage-598b5f9767     0         0         0       17h
-replicaset.apps/screeningmanage-645c457774     0         0         0       19h
-replicaset.apps/screeningmanage-6485bb9857     0         0         0       17h
-replicaset.apps/screeningmanage-6865764467     0         0         0       19h
-replicaset.apps/screeningmanage-78984d5dc8     0         0         0       17h
-replicaset.apps/screeningmanage-9498f6bdc      1         1         1       17h
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/a-driver        1/4     4            1           9h
+deployment.apps/a-gateway       1/1     1            1           9h
+deployment.apps/a-management    1/1     1            1           26h
+deployment.apps/a-order         1/1     1            1           25h
+deployment.apps/a-orderstatus   1/1     1            1           9h
+deployment.apps/siege           1/1     1            1           9h
 
-NAME                                                 REFERENCE                   TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/hospitalmanage   Deployment/hospitalmanage   2%/15%   1         10        0          7s
+NAME                                      DESIRED   CURRENT   READY   AGE
+replicaset.apps/a-driver-6b69686948       0         0         0       118m
+replicaset.apps/a-driver-7d64667f79       4         4         1       5m15s
+replicaset.apps/a-driver-86567d5564       0         0         0       74m
+replicaset.apps/a-gateway-64c49fb9c       1         1         1       5h15m
+replicaset.apps/a-management-5565fcf6b7   1         1         1       101m
+replicaset.apps/a-management-5d6cbb5568   0         0         0       125m
+replicaset.apps/a-management-657c879dff   0         0         0       130m
+replicaset.apps/a-management-6949d6d89f   0         0         0       119m
+replicaset.apps/a-management-6d7b5b64f    0         0         0       6h23m
+replicaset.apps/a-management-7b76f45765   0         0         0       4h7m
+replicaset.apps/a-management-9f68d559     0         0         0       25h
+replicaset.apps/a-order-66dcd46648        0         0         0       25h
+replicaset.apps/a-order-86f4f96986        1         1         1       6h14m
+replicaset.apps/a-orderstatus-6cd5fcc9b   0         0         0       9h
+replicaset.apps/a-orderstatus-8c867d5df   1         1         1       6h18m
+replicaset.apps/siege-7df8f548c           1         1         1       9h
+
+NAME                                           REFERENCE             TARGETS    MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/a-driver   Deployment/a-driver   136%/20%   1         10        1          39m
 ```
 
 - siege로 워크로드를 2분 동안 걸어준다.
@@ -504,23 +518,33 @@ kubectl get deploy a-driver -w
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ```
-NAME             READY   UP-TO-DATE   AVAILABLE   AGE
-hospitalmanage   1/1     1            1           11h
-hospitalmanage   1/4     1            1           11h
-hospitalmanage   1/4     1            1           11h
-hospitalmanage   1/4     1            1           11h
-hospitalmanage   1/4     4            1           11h
-hospitalmanage   1/5     4            1           11h
-hospitalmanage   1/5     4            1           11h
-hospitalmanage   1/5     4            1           11h
-hospitalmanage   1/5     5            1           11h
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+a-driver   1/1     1            1           9h
+a-driver   2/1     1            2           9h
+a-driver   1/1     1            1           9h
+a-driver   0/1     1            0           9h
+a-driver   1/1     1            1           9h
+a-driver   1/4     1            1           9h
+a-driver   1/4     1            1           9h
+a-driver   1/4     1            1           9h
+a-driver   1/4     4            1           9h
+a-driver   1/7     4            1           9h
+a-driver   1/7     4            1           9h
+a-driver   1/7     4            1           9h
+a-driver   1/7     7            1           9h
+a-driver   2/7     7            2           9h
+a-driver   3/7     7            3           9h
+a-driver   4/7     7            4           9h
+a-driver   5/7     7            5           9h
+a-driver   6/7     7            6           9h
+a-driver   7/7     7            7           9h
 ```
 
 - kubectl get으로 HPA을 확인하면 CPU 사용률이 64%로 증가됐다.
 ```
 $kubectl get hpa a-driver 
-NAME                                                 REFERENCE                   TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/hospitalmanage   Deployment/hospitalmanage   64%/15%   1         10        5          2m54s
+NAME       REFERENCE             TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+a-driver   Deployment/a-driver   136%/20%    1         10        7          41m
 ```
 
 - siege 의 로그를 보면 Availability가 100%로 유지된 것을 확인 할 수 있다.  
@@ -542,7 +566,7 @@ Shortest transaction:           0.00
 
 - HPA 삭제 
 ```
-$kubectl kubectl delete hpa hospitalmanage  -n skcc-ns
+$kubectl kubectl delete hpa a-driver
 ```
 
 
