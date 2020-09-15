@@ -125,7 +125,7 @@ A조 택시 호출 서비스 CNA개발 실습을 위한 프로젝트
 | 기능 | 이벤트 Payload |
 |---|:---:|
 | 1. 고객이 택시를 호출(장소, 고객명)한다. |![#024](https://github.com/skldk89/TaxiCall/blob/master/Image/%23024.png)|
-| 2. Management 에서 호출을 받아서 택시 기사에서 체크할 것을 요청한다.(Sync)</br>3. 택시 기사는 받은 호출을 수락하거나 거절한다.(Async)</br>4. Management에서 변경사항을 접수 받는다.</br>5. 호출 수락 시 고객에게 호출되었음을 공유한다.(Async)</br>6. 호출 거절 시 고객에게 호출 거절되었음을 공유한다.(Async) |![#025](https://github.com/skldk89/TaxiCall/blob/master/Image/%23025.png)|
+| 2. Management 에서 호출을 받아서 택시 기사에서 체크할 것을 요청한다.(Sync)</br>3. 택시 기사는 받은 호출을 수락하거나 거절한다.(Async)</br>4. Management에서 변경사항을 접수 받는다.</br>5. 호출 수락 시 고객에게 호출되었음을 공유한다.(Async)</br>6. 호출 거절 시 고객에게 호출 거절되었음을 공유한다.(Async) |![#025](https://github.com/skldk89/TaxiCall/blob/master/Image/%23025.png)</br>![#026](https://github.com/skldk89/TaxiCall/blob/master/Image/%23026.png)|
 | 7. 고객이 Taxi 호출 예약을 취소한다.(Async)</br>8. 고객의 예약 취소에 따라서 Management 내역의 상태가 예약 취소로 변경된다.</br>9. Driver에게 예약취소 되었음을 공유 한다.(Async) | ![image](https://user-images.githubusercontent.com/25805562/91837990-c2227680-ec87-11ea-9fb1-530410922532.png) |
 | 10. 호출된 현황을 조회한다.| ![image](https://user-images.githubusercontent.com/25805562/91838415-6ad0d600-ec88-11ea-9df8-1c6895fe6d75.png) |
 
