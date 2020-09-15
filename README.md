@@ -440,14 +440,20 @@ kubectl delete -f dr-driver.yaml
 ### 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
 
-* (istio injection 적용한 경우) istio injection 적용 해제
+* Metric Server 설치(CPU 사용량 체크를 위해)
 ```
-kubectl label namespace istio-cb-ns istio-injection=enabled
+$kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+$kubectl get deployment metrics-server -n kube-system
 ```
 
-- replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
+* (istio injection 적용한 경우) istio injection 적용 해제
 ```
-kubectl autoscale deploy hospitalmanage -n skcc-ns --min=1 --max=10 --cpu-percent=15
+kubectl label namespace istio-cb-ns istio-injection=disabled --overwrite
+```
+
+- replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 10프로를 넘어서면 replica 를 10개까지 늘려준다:
+```
+kubectl autoscale deploy a-driver -n skcc-ns --min=1 --max=10 --cpu-percent=10
 
 # 적용 내용
 $kubectl get all -n istio-cb-ns
@@ -486,14 +492,14 @@ NAME                                                 REFERENCE                  
 horizontalpodautoscaler.autoscaling/hospitalmanage   Deployment/hospitalmanage   2%/15%   1         10        0          7s
 ```
 
-- siege로 워크로드를 1분 동안 걸어준다.
+- siege로 워크로드를 2분 동안 걸어준다.
 ```
-$  siege -c100 -t60S -r10  -v http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
+$  siege -c100 -t120S -v  http://a-driver:8080
 ```
 
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
 ```
-kubectl get deploy hospitalmanage -n skcc-ns -w 
+kubectl get deploy a-driver -w 
 ```
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
@@ -512,7 +518,7 @@ hospitalmanage   1/5     5            1           11h
 
 - kubectl get으로 HPA을 확인하면 CPU 사용률이 64%로 증가됐다.
 ```
-$kubectl get hpa hospitalmanage -n skcc-ns 
+$kubectl get hpa a-driver 
 NAME                                                 REFERENCE                   TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 horizontalpodautoscaler.autoscaling/hospitalmanage   Deployment/hospitalmanage   64%/15%   1         10        5          2m54s
 ```
