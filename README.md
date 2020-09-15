@@ -387,119 +387,53 @@ MSA 서비스별 CodeBuild 프로젝트 생성하여  CI/CD 파이프라인 구�
 
 * istio-injection 적용 (기 적용완료)
 ```
-kubectl label namespace skcc-ns istio-injection=enabled
+# Sidecar Actvate
+kubectl label namespace istio-cb-ns istio-injection=enabled 
 ```
 
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 100명
-- 60초 동안 실시
+- 동시사용자 10명
+- 5초 동안 실시
 ```
-$siege -c100 -t60S -r10  -v http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals 
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.00 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.00 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.00 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
+$siege -c10 -t5S -v  http://a-driver:8080
 ```
+![#021](https://github.com/skldk89/TaxiCall/blob/master/Image/%23021.png)
+
 * 서킷 브레이킹을 위한 DestinationRule 적용
 ```
-#dr-hospital.yaml
+#dr-driver.yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: dr-hospital
-  namespace: skcc-ns
+  name: dr-driver
+  namespace: istio-cb-ns
 spec:
-  host: hospitalmanage
+  host: a-driver
   trafficPolicy:
     connectionPool:
       http:
-        http1MaxPendingRequests: 1
-        maxRequestsPerConnection: 1
+        http1MaxPendingRequests: 5
+        maxRequestsPerConnection: 5
     outlierDetection:
       interval: 1s
-      consecutiveErrors: 2
-      baseEjectionTime: 10s
+      consecutiveErrors: 1
+      baseEjectionTime: 3s
       maxEjectionPercent: 100
 ```
 
 
 ```
-$kubectl apply -f dr-hospital.yaml
-
-$siege -c100 -t60S -r10  -v http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals 
-HTTP/1.1 200   0.03 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.04 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      81 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      81 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      81 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      81 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.01 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      81 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      95 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      95 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.03 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 200   0.02 secs:    5650 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.02 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.01 secs:      19 bytes ==> GET  /hospitals
-HTTP/1.1 503   0.00 secs:      19 bytes ==> GET  /hospitals
-
-Transactions:                    194 hits
-Availability:                  16.68 %
-Elapsed time:                  59.76 secs
-Data transferred:               1.06 MB
-Response time:                  0.03 secs
-Transaction rate:               3.25 trans/sec
-Throughput:                     0.02 MB/sec
-Concurrency:                    0.10
-Successful transactions:         194
-Failed transactions:             969
-Longest transaction:            0.04
-Shortest transaction:           0.00
-
-
+$kubectl apply -f dr-driver.yaml
+$siege -c10 -t5S -v  http://a-driver:8080
 ```
+![#022](https://github.com/skldk89/TaxiCall/blob/master/Image/%23022.png)
 
 * DestinationRule 적용되어 서킷 브레이킹 동작 확인 (kiali 화면)
-![Kaili_DR RUlE적용](https://user-images.githubusercontent.com/67453893/91850567-b7bca880-ec98-11ea-8f9b-59b4223fb046.png)
+![#023](https://github.com/skldk89/TaxiCall/blob/master/Image/%23023.png)
 
 * 다시 부하 발생하여 DestinationRule 적용 제거하여 정상 처리 확인
 ```
-kubectl delete -f dr-hospital.yaml
+kubectl delete -f dr-driver.yaml
 ```
 
 
