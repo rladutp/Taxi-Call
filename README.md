@@ -731,26 +731,38 @@ public interface DriverService {
 ```
 url에 configMap 적용
 
-* kubectl describe pod screeningmanage-9498f6bdc-qtclh  -n skcc-ns
+* kubectl describe pod/a-management-5565fcf6b7-vmjlf -n istio-cb-ns
 ```
 Containers:
-  screeningmanage:
-    Container ID:   docker://8415f0125bac0264b5f77d14ed8ee7c28bc177e2cce9141a4c36e076c7920971
-    Image:          052937454741.dkr.ecr.us-east-2.amazonaws.com/screeningmanage:f8102f4078683bdbf345cc5cae7983b1cb8ea                                                                      668
-    Image ID:       docker-pullable://052937454741.dkr.ecr.us-east-2.amazonaws.com/screeningmanage@sha256:ebc8945df607                                                                      acc63d87e20d345e17245e3472fec43a9690e8ab9ca959573c9b
+  a-management:
+    Container ID:   docker://1bd0c96dc3ab4ee0d080104952c21e6e49ca9d7711d47b157ef3d3520febfa26
+    Image:          271153858532.dkr.ecr.ap-northeast-2.amazonaws.com/a-management:198772e0ab0fb240f7f05d0d0c32deb03ffe8b03
+    Image ID:       docker-pullable://271153858532.dkr.ecr.ap-northeast-2.amazonaws.com/a-management@sha256:ebabfd754f645d3e0a8b9d5653634a1e5bb153ec15bb614edb75b0f5f2cbaad8
     Port:           8080/TCP
     Host Port:      0/TCP
     State:          Running
-      Started:      Tue, 01 Sep 2020 07:55:29 +0000
+      Started:      Tue, 15 Sep 2020 09:12:40 +0000
     Ready:          True
     Restart Count:  0
     Liveness:       http-get http://:8080/actuator/health delay=120s timeout=2s period=5s #success=1 #failure=5
-    Readiness:      http-get http://:8080/actuator/health delay=30s timeout=2s period=5s #success=1 #failure=10
+    Readiness:      http-get http://:8080/actuator/health delay=10s timeout=2s period=5s #success=1 #failure=10
     Environment:
-      api.hospital.url:  <set to the key 'api.hospital.url' of config map 'my-config'>  Optional: false
+      api.url.driver:  <set to the key 'api.url.driver' of config map 'a-config'>  Optional: false
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-xw8ld (ro)
-
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-zcgdh (ro)
+  istio-proxy:
+    Container ID:  docker://bdb76ddb2a6243617094b905fd76dc4954caf49d4dc56412536d9dff35eff8e4
+    Image:         docker.io/istio/proxyv2:1.4.5
+    Image ID:      docker-pullable://istio/proxyv2@sha256:fc09ea0f969147a4843a564c5b677fbf3a6f94b56627d00b313b4c30d5fef094
+    Port:          15090/TCP
+    Host Port:     0/TCP
+    Args:
+      proxy
+      sidecar
+      --domain
+      $(POD_NAMESPACE).svc.cluster.local
+      --configPath
+      /etc/istio/proxy
 ```
 kubectl describe 명령으로 컨테이너에 configMap 적용여부를 알 수 있다. 
 
