@@ -440,27 +440,9 @@ kubectl delete -f dr-driver.yaml
 ### 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
 
-* Metric Server 설치(CPU 사용량 체크를 위해)
-```
-$kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
-$kubectl get deployment metrics-server -n kube-system
-```
-
 * (istio injection 적용한 경우) istio injection 적용 해제
 ```
-kubectl label namespace skcc-ns istio-injection=disabled --overwrite
-```
-
-- Deployment 배포시 resource 설정 적용
-```
-    spec:
-      containers:
-          ...
-          resources:
-            limits:
-              cpu: 500m 
-            requests:
-              cpu: 200m 
+kubectl label namespace istio-cb-ns istio-injection=enabled
 ```
 
 - replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
@@ -468,7 +450,7 @@ kubectl label namespace skcc-ns istio-injection=disabled --overwrite
 kubectl autoscale deploy hospitalmanage -n skcc-ns --min=1 --max=10 --cpu-percent=15
 
 # 적용 내용
-$kubectl get all -n skcc-ns
+$kubectl get all -n istio-cb-ns
 NAME                        TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)          AGE
 service/gateway             LoadBalancer   10.100.95.162    a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com   8080:30387/TCP   19h
 service/hospitalmanage      ClusterIP      10.100.5.64      <none>                                                                   8080/TCP         19h
