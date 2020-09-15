@@ -656,62 +656,76 @@ Shortest transaction:           0.41
 시스템별로 또는 운영중에 동적으로 변경 가능성이 있는 설정들을 ConfigMap을 사용하여 관리합니다.
 Application에서 특정 도메일 URL을 ConfigMap 으로 설정하여 운영/개발등 목적에 맞게 변경가능합니다.  
 
-* my-config.yaml
+* a-config.yaml
 ```
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: my-config
-  namespace: skcc-ns
+  name: a-config
+  namespace: istio-cb-ns
 data:
-  api.hospital.url: http://HospitalManage:8080
+  api.url.driver: http://a-driver:8080
 ```
-my-config라는 ConfigMap을 생성하고 key값에 도메인 url을 등록한다. 
+a-config라는 ConfigMap을 생성하고 key값에 도메인 url을 등록한다. 
 
-* ScreeningManage/buildsepc.yaml (configmap 사용)
+* Management/buildsepc.yaml (configmap 사용)
 ```
- cat  <<EOF | kubectl apply -f -
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: $_PROJECT_NAME
-          namespace: $_NAMESPACE
-          labels:
-            app: $_PROJECT_NAME
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
+cat  <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: $_PROJECT_NAME
+            namespace: istio-cb-ns
+            labels:
               app: $_PROJECT_NAME
-          template:
-            metadata:
-              labels:
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
                 app: $_PROJECT_NAME
-            spec:
-              containers:
-                - name: $_PROJECT_NAME
-                  image: $AWS_ACCOUNT_ID.dkr.ecr.$_AWS_REGION.amazonaws.com/$_PROJECT_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
-                  ports:
-                    - containerPort: 8080
-                  env:
-                    - name: api.hospital.url
-                      valueFrom:
-                        configMapKeyRef:
-                          name: my-config
-                          key: api.hospital.url
-                  imagePullPolicy: Always
-                
+            template:
+              metadata:
+                labels:
+                  app: $_PROJECT_NAME
+              spec:
+                containers:
+                  - name: $_PROJECT_NAME
+                    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$_PROJECT_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+                    ports:
+                      - containerPort: 8080
+                    env:
+                      - name: api.url.driver
+                        valueFrom:
+                          configMapKeyRef:
+                            name: a-config
+                            key: api.url.driver
+                    readinessProbe:
+                      httpGet:
+                        path: /actuator/health
+                        port: 8080
+                      initialDelaySeconds: 10
+                      timeoutSeconds: 2
+                      periodSeconds: 5
+                      failureThreshold: 10
+                    livenessProbe:
+                      httpGet:
+                        path: /actuator/health
+                        port: 8080
+                      initialDelaySeconds: 120
+                      timeoutSeconds: 2
+                      periodSeconds: 5
+                      failureThreshold: 5
         EOF
 ```
 Deployment yaml에 해단 configMap 적용
 
-* HospitalService.java
+* DriverService.java
 ```
-@FeignClient(name="HospitalManage", url="${api.hospital.url}")//,fallback = HospitalServiceFallback.class)
-public interface HospitalService {
+@FeignClient(name="Driver", url= "${api.url.driver}")
+public interface DriverService {
 
-    @RequestMapping(method= RequestMethod.PUT, value="/hospitals/{hospitalId}", consumes = "application/json")
-    public void screeningRequest(@PathVariable("hospitalId") Long hospitalId, @RequestBody Hospital hospital);
+    @RequestMapping(method= RequestMethod.GET, path="/drivers/check")
+    public void checkOrder(@RequestBody Driver param);
 
 }
 ```
