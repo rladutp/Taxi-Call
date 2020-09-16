@@ -503,7 +503,7 @@ replicaset.apps/a-orderstatus-8c867d5df   1         1         1       6h18m
 replicaset.apps/siege-7df8f548c           1         1         1       9h
 
 NAME                                           REFERENCE             TARGETS    MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/a-driver   Deployment/a-driver   1%/20%   1         10        1          39m
+horizontalpodautoscaler.autoscaling/a-driver   Deployment/a-driver   12%/20%   1         10        1          39m
 ```
 
 - siege로 워크로드를 2분 동안 걸어준다.
@@ -647,18 +647,18 @@ readinessProbe:
 
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
 ```
-Transactions:                    234 hits
+Transactions:                  71859 hits
 Availability:                 100.00 %
-Elapsed time:                 119.04 secs
-Data transferred:               0.00 MB
-Response time:                  0.51 secs
-Transaction rate:               1.97 trans/sec
-Throughput:                     0.00 MB/sec
-Concurrency:                    1.00
-Successful transactions:         234
+Elapsed time:                 299.15 secs
+Data transferred:              14.12 MB
+Response time:                  0.00 secs
+Transaction rate:             240.21 trans/sec
+Throughput:                     0.05 MB/sec
+Concurrency:                    0.96
+Successful transactions:       71859
 Failed transactions:               0
-Longest transaction:            1.57
-Shortest transaction:           0.41
+Longest transaction:            0.50
+Shortest transaction:           0.00
 
 ```
 
