@@ -453,7 +453,7 @@ kubectl label namespace istio-cb-ns istio-injection=disabled --overwrite
 
 - replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 20프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deploy a-driver -n skcc-ns --min=1 --max=10 --cpu-percent=20
+kubectl autoscale deploy a-driver -n istio-cb-ns --min=1 --max=10 --cpu-percent=20
 
 # 적용 내용
 $kubectl get all -n istio-cb-ns
