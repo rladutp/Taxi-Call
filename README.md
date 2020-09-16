@@ -503,7 +503,7 @@ replicaset.apps/a-orderstatus-8c867d5df   1         1         1       6h18m
 replicaset.apps/siege-7df8f548c           1         1         1       9h
 
 NAME                                           REFERENCE             TARGETS    MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/a-driver   Deployment/a-driver   136%/20%   1         10        1          39m
+horizontalpodautoscaler.autoscaling/a-driver   Deployment/a-driver   1%/20%   1         10        1          39m
 ```
 
 - siege로 워크로드를 2분 동안 걸어준다.
@@ -577,16 +577,14 @@ Readiness Probe 미설정 시 무정지 재배포 가능여부 확인을 위해 
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-$ siege -v -c1 -t240S --content-type "application/json" 'http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals POST {"id": "101","hospitalId":"2","hospitalNm":"bye","chkDate":"0909","pcnt":20}'
+$ siege -c1 -t300S -r20 -v  http://a-driver:8080
 
-** SIEGE 4.0.4
-** Preparing 100 concurrent users for battle.
 The server is now under siege...
 
-HTTP/1.1 200     0.48 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 200     0.49 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 200     0.63 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 200     0.48 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
+HTTP/1.1 200     0.01 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.02 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.09 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.00 secs:     206 bytes ==> GET  /
 :
 
 ```
@@ -595,34 +593,38 @@ HTTP/1.1 200     0.48 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac
 Git hook 연동 설정되어 Github의 소스 변경 발생 시 자동 빌드 배포됨
 재배포 작업 중 서비스 중단됨 (503 오류 발생)
 ```
-HTTP/1.1 200     0.48 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 200     0.55 secs:       0 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.47 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.48 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.51 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.47 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.48 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.53 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.50 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
-HTTP/1.1 503     0.45 secs:      95 bytes ==> POST http://a67fdf8668e5d4b518f8ac2a62bd4b45-334568913.us-east-2.elb.amazonaws.com:8080/hospitals
+HTTP/1.1 200     0.01 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.00 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.01 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.01 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.00 secs:     206 bytes ==> GET  /
+HTTP/1.1 200     0.06 secs:     206 bytes ==> GET  /
+HTTP/1.1 503     0.07 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.04 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.03 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.09 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.03 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.02 secs:      91 bytes ==> GET  /
+HTTP/1.1 503     0.05 secs:      91 bytes ==> GET  /
 :
 
 ```
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 ```
-Transactions:                    372 hits
-Availability:                  90.29 %
-Elapsed time:                 205.09 secs
-Data transferred:               0.00 MB
-Response time:                  0.55 secs
-Transaction rate:               1.81 trans/sec
-Throughput:                     0.00 MB/sec
-Concurrency:                    1.00
-Successful transactions:         372
-Failed transactions:              40
-Longest transaction:            1.50
-Shortest transaction:           0.43
+Transactions:                  77349 hits
+Availability:                  98.82 %
+Elapsed time:                 400.06 secs
+Data transferred:              15.27 MB
+Response time:                  0.00 secs
+Transaction rate:             193.34 trans/sec
+Throughput:                     0.04 MB/sec
+Concurrency:                    0.94
+Successful transactions:       77349
+Failed transactions:             926
+Longest transaction:            1.96
+Shortest transaction:           0.00
+
 
 ```
 - 배포기간중 Availability 가 평소 100%에서 90% 대로 떨어지는 것을 확인. 
@@ -636,7 +638,7 @@ readinessProbe:
     httpGet:
       path: '/actuator/health'
       port: 8080
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     timeoutSeconds: 2
     periodSeconds: 5
     failureThreshold: 10
